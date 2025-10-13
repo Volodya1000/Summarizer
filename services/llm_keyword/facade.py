@@ -2,8 +2,16 @@
 import asyncio
 from models import KeywordNode, KeywordTreeSummary
 
+import asyncio
+from typing import List
+
 class LLMKeywordService:
     async def generate(self, text: str) -> KeywordTreeSummary:
-        await asyncio.sleep(0.08)
-        node = KeywordNode(keyword="llm_root", children=[KeywordNode(keyword="llm_child")])
-        return KeywordTreeSummary(ru=node, en=node)
+        # создаём узлы
+        root_node = KeywordNode(name="llm_root", children=[KeywordNode(name="llm_child")])
+        
+        # оборачиваем в список, так как ru/en теперь List[KeywordNode]
+        return KeywordTreeSummary(
+            ru=[root_node],
+            en=[root_node]
+        )

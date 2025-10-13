@@ -14,7 +14,8 @@ from services.summary_generation_service import SummaryGenerationService
 from services.llm_text.facade import LLMTextSummaryService
 from services.llm_keyword.facade import LLMKeywordService
 from services.extraction_text.facade import ExtractionTextSummaryService
-from services.extraction_keyword.facade import ExtractionKeywordService
+from services.extraction_keyword.all import ExtractionKeywordService
+from services.extraction_keyword.translator import LocalTranslator
 from file_handler import FileUploader
 from dependencies import get_document_service, get_uploader
 
@@ -34,7 +35,7 @@ async def lifespan(app: FastAPI):
         llm_text_svc=LLMTextSummaryService(),
         llm_keyword_svc=LLMKeywordService(),
         extraction_text_svc=ExtractionTextSummaryService(),
-        extraction_keyword_svc=ExtractionKeywordService(),
+        extraction_keyword_svc=ExtractionKeywordService(LocalTranslator()),
     )
 
     document_service = DocumentService(repo=repo, summary_service=summary_service)
@@ -64,3 +65,13 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=False,  # обязательно выключить reload для отладки
+        log_level="debug",
+    )

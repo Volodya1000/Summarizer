@@ -17,7 +17,7 @@ Base = declarative_base()
 # Pydantic DTOs (Data Transfer Objects)
 # ----------------------------
 class KeywordNode(BaseModel):
-    keyword: str
+    name: str
     children: List["KeywordNode"] = []
 
 class TextSummary(BaseModel):
@@ -25,8 +25,8 @@ class TextSummary(BaseModel):
     en: str
 
 class KeywordTreeSummary(BaseModel):
-    ru: KeywordNode
-    en: KeywordNode
+    ru: List[KeywordNode]
+    en:  List[KeywordNode]
 
 class SummaryResult(BaseModel):
     llm_text_summary: TextSummary
