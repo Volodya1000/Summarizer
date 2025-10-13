@@ -380,11 +380,6 @@ class ExtractionKeywordService:
         """
         translated_nodes = []
         for node in nodes:
-            # Имитация асинхронной операции перевода
-            await asyncio.sleep(0.005) 
-            
-            # Предполагаем, что поле с текстом в KeywordNode называется 'name' (или 'keyword', в зависимости от модели)
-            # В вашем коде используется node.name, придерживаюсь этого
             name_translated = self.translator.translate(node.name, src=src, tgt=tgt)
             
             translated_children = await self._translate_tree(node.children, src=src, tgt=tgt)
@@ -425,11 +420,12 @@ class ExtractionKeywordService:
         default_node = KeywordNode(name="No keywords found", children=[])
         
         if source_lang == "ru":
-            ru_tree = [roots_original[0]] if roots_original else [default_node]
-            en_tree = [roots_translated[0]] if roots_translated else [default_node]
-        else: # source_lang == "en"
-            en_tree = [roots_original[0]] if roots_original else [default_node]
-            ru_tree = [roots_translated[0]] if roots_translated else [default_node]
+            ru_tree = roots_original if roots_original else [default_node]
+            en_tree = roots_translated if roots_translated else [default_node]
+        else:
+            en_tree = roots_original if roots_original else [default_node]
+            ru_tree = roots_translated if roots_translated else [default_node]
+
 
         result = KeywordTreeSummary(ru=ru_tree, en=en_tree)
 

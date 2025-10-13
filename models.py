@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import List, Optional
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import Column, Integer, String, JSON, DateTime, func
 from sqlalchemy.orm import declarative_base
 
@@ -18,7 +18,7 @@ Base = declarative_base()
 # ----------------------------
 class KeywordNode(BaseModel):
     name: str
-    children: List["KeywordNode"] = []
+    children: List["KeywordNode"] = Field(default_factory=list)
 
 class TextSummary(BaseModel):
     ru: str
