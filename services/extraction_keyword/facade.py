@@ -1,6 +1,7 @@
 # project_root/services/extraction_keyword/facade.py
 import asyncio
 from models import KeywordNode, KeywordTreeSummary
+from langdetect import detect
 
 class ExtractionKeywordService1:
     async def generate(self, text: str) -> KeywordTreeSummary:
@@ -23,15 +24,14 @@ class ExtractionKeywordService:
         # Удаляем self.lang, так как он определяется динамически
         self.translator = translator
 
-    async def _detect_language(self, text: str) -> str:
-        """
-        Асинхронное определение языка текста (заглушка).
-        В реальном приложении здесь вызывался бы async-метод модели определения языка.
-        """
-      
-        if len(text) > 0 and text[0].isalpha() and text[0] not in "aoyeui":
-         return 'ru'
-        return 'en'
+    def _detect_language(self,text: str) -> str:
+        try:
+            lang = detect(text)
+            if lang.startswith("ru"):
+                return "ru"
+            return "en"
+        except Exception:
+            return "en"
 
 
     async def _translate_tree(self, nodes: List[KeywordNode], src: str, tgt: str) -> List[KeywordNode]:
@@ -40,11 +40,7 @@ class ExtractionKeywordService:
         """
         translated_nodes = []
         for node in nodes:
-            # Имитация асинхронной операции перевода
-            await asyncio.sleep(0.005) 
-            
-            # Предполагаем, что поле с текстом в KeywordNode называется 'name' (или 'keyword', в зависимости от модели)
-            # В вашем коде используется node.name, придерживаюсь этого
+         
             name_translated = self.translator.translate(node.name, src=src, tgt=tgt)
             
             translated_children = await self._translate_tree(node.children, src=src, tgt=tgt)
@@ -63,7 +59,7 @@ class ExtractionKeywordService:
         """
         
         # ШАГ 0: АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА
-        source_lang = await self._detect_language(text)
+        source_lang = self._detect_language(text)
         
         # Шаг 1: Извлечение и кластеризация
         phrases = extract_key_phrases(text, lang=source_lang)
@@ -81,10 +77,10 @@ class ExtractionKeywordService:
         default_node = KeywordNode(name="No keywords found", children=[])
         
         if source_lang == "ru":
-            ru_tree = roots_original[0] if roots_original else default_node
-            en_tree = roots_translated[0] if roots_translated else default_node
-        else: # source_lang == "en"
-            en_tree = roots_original[0] if roots_original else default_node
-            ru_tree = roots_translated[0] if roots_translated else default_node
+            ru_tree = roots_original if roots_original else [default_node]
+            en_tree = roots_translated if roots_translated else [default_node]
+        else:
+            en_tree = roots_original if roots_original else [default_node]
+            ru_tree = roots_translated if roots_translated else [default_node]
 
         return KeywordTreeSummary(ru=ru_tree, en=en_tree)

@@ -14,7 +14,7 @@ from services.summary_generation_service import SummaryGenerationService
 from services.llm_text.facade import LLMTextSummaryService
 from services.llm_keyword.facade import LLMKeywordService
 from services.extraction_text.facade import ExtractionTextSummaryService
-from services.extraction_keyword.all import ExtractionKeywordService
+from services.extraction_keyword.facade import ExtractionKeywordService
 from services.extraction_keyword.translator import LocalTranslator
 from file_handler import FileUploader
 from dependencies import get_document_service, get_uploader
