@@ -60,7 +60,7 @@ SummaryResult.update_forward_refs()
 class TextDocument(Base):
     __tablename__ = "text_documents"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    file_name = Column(String, nullable=False, unique=True)
+    file_name = Column(String, nullable=False)
     name = Column(String, nullable=False, unique=True)
     original_text = Column(String, nullable=False)
     summary_json = Column(JSON, nullable=False)

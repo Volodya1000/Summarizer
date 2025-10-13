@@ -53,7 +53,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Async Document Summary", lifespan=lifespan)
 
     # Статика и шаблоны
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app.mount("/static", StaticFiles(directory=STATIC_DIR.resolve()), name="static")
     app.templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
     # Роутеры

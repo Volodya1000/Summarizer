@@ -1,3 +1,4 @@
+/* -------------------- Общие стили -------------------- */
 body {
     font-family: 'Inter', sans-serif;
     background: #f4f6f8;
@@ -15,6 +16,7 @@ body {
     box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 
+/* -------------------- Ссылки -------------------- */
 .back-link {
     text-decoration: none;
     color: #007bff;
@@ -23,6 +25,12 @@ body {
 
 .back-link:hover {
     text-decoration: underline;
+}
+
+/* -------------------- Заголовки -------------------- */
+h1, h2, h3 {
+    color: #222;
+    margin-bottom: 16px;
 }
 
 .doc-title {
@@ -34,6 +42,7 @@ body {
     font-size: 0.9rem;
 }
 
+/* -------------------- Текст документа -------------------- */
 .original {
     white-space: pre-wrap;
     background: #f9f9fb;
@@ -45,6 +54,7 @@ body {
     font-size: 0.95rem;
 }
 
+/* -------------------- Сводки -------------------- */
 .summary-block {
     margin-top: 20px;
 }
@@ -58,6 +68,8 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s;
+    /* Добавляем небольшой отступ снизу */
+    margin-bottom: 10px; 
 }
 
 .toggle-btn:hover {
@@ -65,56 +77,57 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* Ключевые стили для сворачиваемого блока */
 .collapsible {
-    max-height: 0;
+    max-height: 0; /* Должен быть 0 */
     overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.4s ease;
-    margin-top: 10px;
-    padding: 0 12px;
-    border-left: 4px solid #4f9cff;
-    background: #f5f8ff;
-    border-radius: 8px;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out; 
+    padding: 0 12px; /* Изначально вертикальный padding 0 */
+    /* ... остальные стили ... */
 }
 
-.collapsible.show {
-    padding: 12px;
-    max-height: 1000px; /* достаточно, чтобы вместить текст */
+/* Класс для добавления padding при раскрытии */
+.collapsible.is-open {
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
+/* Деревья ключевых слов */
 .kw-tree {
     list-style-type: disc;
     margin-left: 20px;
+    /* Добавляем отступ для корректного отображения внутри сводки */
+    padding-left: 0; 
 }
 
-.delete-btn {
-    background: #ff4d4f;
+/* -------------------- Кнопки -------------------- */
+button {
+    /* Общие стили для кнопок, кроме toggle-btn */
+    background: linear-gradient(135deg, #4f9cff, #0066ff);
     color: white;
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
     transition: all 0.3s;
+    font-weight: 500;
 }
 
-.delete-btn:hover {
+button:hover {
+    background: linear-gradient(135deg, #66aaff, #0055ee);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Кнопка удаления */
+button.delete-btn, button[type="submit"] {
+    background: #ff4d4f;
+}
+
+button.delete-btn:hover, button[type="submit"]:hover {
     background: #e60000;
 }
 
-.container {
-    max-width: 900px;
-    margin: 30px auto;
-    background: #fff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
-h1, h2 {
-    color: #222;
-    margin-bottom: 16px;
-}
-
-/* Таблицы */
+/* -------------------- Таблицы -------------------- */
 .docs {
     width: 100%;
     border-collapse: separate;
@@ -148,33 +161,7 @@ h1, h2 {
     text-decoration: underline;
 }
 
-/* Кнопки */
-button {
-    background: linear-gradient(135deg, #4f9cff, #0066ff);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: 500;
-}
-
-button:hover {
-    background: linear-gradient(135deg, #66aaff, #0055ee);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* Кнопка удаления */
-button[type="submit"] {
-    background: #ff4d4f;
-}
-
-button[type="submit"]:hover {
-    background: #e60000;
-}
-
-/* Форма загрузки */
+/* -------------------- Форма загрузки -------------------- */
 form {
     margin-top: 16px;
 }

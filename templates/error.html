@@ -1,15 +1,9 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Ошибка</title>
-  <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Ошибка</h1>
-    <p>{{ message }}</p>
-    <p><a href="/">Вернуться на главную</a></p>
-  </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Ошибка{% endblock %}
+
+{% block content %}
+  <h1>Ошибка</h1>
+  <p>{{ message }}</p>
+  <p><a href="/">Вернуться на главную</a></p>
+{% endblock %}

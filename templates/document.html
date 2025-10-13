@@ -1,46 +1,56 @@
-<div class="container">
+{% extends "base.html" %}
+
+{% block title %}{{ doc.name or doc.file_name }}{% endblock %}
+
+{% block content %}
   <a href="/" class="back-link">← Назад к списку</a>
   <h1 class="doc-title">{{ doc.file_name }} {% if doc.name %} — {{ doc.name }}{% endif %}</h1>
-  <p class="doc-meta">id: {{ doc.id }} — создан: {{ doc.created_at or "-" }}</p>
+  <p class="doc-meta">Добавлено: {{ doc.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
 
-  <h2>Оригинальный текст</h2>
-  <pre class="original">{{ doc.original_text }}</pre>
+  <hr>
+
+  <h2>Исходный текст</h2>
+  <div class="original">
+    {{ doc.original_text }}
+  </div>
+
+  <hr>
 
   <h2>Сводки</h2>
 
-  {% for title, div_id, summary in [
-      ('LLM Text Summary', 'llm_text', doc.summary.llm_text_summary),
-      ('Extraction Text Summary', 'extr_text', doc.summary.extraction_text_summary),
-      ('LLM Keyword Tree', 'llm_kw', doc.summary.llm_keyword_summary),
-      ('Extraction Keyword Tree', 'extr_kw', doc.summary.extraction_keyword_summary)
+  {% set summaries = [
+    ('llm_text', 'LLM (Текст)', doc.summary.llm_text_summary.ru, 'text'),
+    ('llm_keyword', 'LLM (Ключевые слова)', doc.summary.llm_keyword_summary.ru, 'keyword'),
+    ('extraction_text', 'Извлечение (Текст)', doc.summary.extraction_text_summary.ru, 'text'),
+    ('extraction_keyword', 'Извлечение (Ключевые слова)', doc.summary.extraction_keyword_summary.ru, 'keyword'),
   ] %}
-    <div class="summary-block">
-      <button onclick="toggle('{{ div_id }}')" class="toggle-btn">{{ title }}</button>
-      <div id="{{ div_id }}" class="collapsible">
-        {% if 'Text' in title %}
-          <h3>RU</h3><p>{{ summary.ru }}</p>
-          <h3>EN</h3><p>{{ summary.en }}</p>
-        {% else %}
-          <ul class="kw-tree">
-            {% macro render_node(node) -%}
-              <li>{{ node.keyword }}
-                {% if node.children %}
-                  <ul>
-                    {% for c in node.children %}
-                      {{ render_node(c) }}
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </li>
-            {%- endmacro %}
-            {{ render_node(summary.ru) }}
-          </ul>
+
+  {% for id, name, summary_data, type in summaries %}
+  <div class="summary-block">
+    <h3>{{ name }}</h3>
+    <button type="button" class="toggle-btn" onclick="toggle('{{ id }}-content', this)">Показать</button> 
+    
+    <div id="{{ id }}-content" class="collapsible">
+        {% if type == 'text' %}
+            <p>{{ summary_data }}</p>
+        {% elif type == 'keyword' %}
+            {% macro render_keywords(node) %}
+                <li>{{ node.keyword }}
+                    {% if node.children %}
+                        <ul class="kw-tree">
+                            {% for child in node.children %}
+                                {{ render_keywords(child) }}
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endmacro %}
+            <ul class="kw-tree">
+                {{ render_keywords(summary_data) | safe }}
+            </ul>
         {% endif %}
-      </div>
     </div>
+  </div>
   {% endfor %}
 
-  <form action="/documents/{{ doc.id }}/delete" method="post" style="margin-top:1em;">
-    <button type="submit" class="delete-btn" onclick="return confirm('Удалить документ?')">Удалить документ</button>
-  </form>
-</div>
+{% endblock %}

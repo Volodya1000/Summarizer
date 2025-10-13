@@ -1,53 +1,45 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Documents — Список</title>
-  <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Список документов</h1>
+{% extends "base.html" %}
 
-    {% if documents %}
-            <table class="docs">
-        <thead>
-            <tr><th>Имя</th><th>Файл</th><th>Создан</th><th>Действия</th></tr>
-        </thead>
-        <tbody>
-        {% for d in documents %}
-            <tr>
-            <td><a href="/documents/{{ d.id }}">{{ d.name }}</a></td>
-            <td>{{ d.file_name }}</td>
-            <td>{{ d.created_at or "-" }}</td>
-            <td>
-                <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
-                <button type="submit" onclick="return confirm('Удалить {{ d.name }}?')">Удалить</button>
-                </form>
-            </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-        </table>
+{% block title %}Список документов{% endblock %}
 
-    {% else %}
-      <p>Документов пока нет.</p>
-    {% endif %}
+{% block content %}
+  <h1>Список документов</h1>
 
-    <hr/>
-    <h2>Загрузить документ (PDF или DOCX)</h2>
-    <form action="/documents/upload" method="post" enctype="multipart/form-data">
-      <label>Файл:<br/>
-        <input type="file" name="file" accept=".pdf,.docx" required>
-      </label>
-      <br/>
-      <label>Имя:<br/>
-        <input type="text" name="name" style="width: 100%" required>
-      </label>
-      <br/>
-      <button type="submit">Загрузить</button>
-    </form>
+  {% if documents %}
+    <table class="docs">
+      <thead>
+        <tr><th>Имя</th><th>Файл</th><th>Создан</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+      {% for d in documents %}
+        <tr>
+          <td><a href="/documents/{{ d.id }}">{{ d.name }}</a></td>
+          <td>{{ d.file_name }}</td>
+          <td>{{ d.created_at or "-" }}</td>
+          <td>
+            <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
+              <button type="submit" onclick="return confirm('Удалить {{ d.name }}?')">Удалить</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Документов пока нет.</p>
+  {% endif %}
 
-  </div>
-</body>
-</html>
+  <hr/>
+  <h2>Загрузить документ (PDF или DOCX)</h2>
+  <form action="/documents/upload" method="post" enctype="multipart/form-data">
+    <label>Файл:<br/>
+      <input type="file" name="file" accept=".pdf,.docx" required>
+    </label>
+    <br/>
+    <label>Имя:<br/>
+      <input type="text" name="name" style="width: 100%" required>
+    </label>
+    <br/>
+    <button type="submit">Загрузить</button>
+  </form>
+{% endblock %}
