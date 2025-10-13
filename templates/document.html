@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Документ {{ doc.file_name }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/toggle.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a href="/">← Назад к списку</a>
+    <h1>{{ doc.file_name }} {% if doc.name %} — {{ doc.name }}{% endif %}</h1>
+    <p><small>id: {{ doc.id }} — создан: {{ doc.created_at or "-" }}</small></p>
+
+    <h2>Оригинальный текст</h2>
+    <pre class="original">{{ doc.original_text }}</pre>
+
+    <h2>Сводки (summary)</h2>
+
+    <div class="summary-block">
+      <button onclick="toggle('llm_text')" class="toggle-btn">LLM Text Summary (RU/EN)</button>
+      <div id="llm_text" class="collapsible">
+        <h3>RU</h3>
+        <p>{{ doc.summary.llm_text_summary.ru }}</p>
+        <h3>EN</h3>
+        <p>{{ doc.summary.llm_text_summary.en }}</p>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <button onclick="toggle('extr_text')" class="toggle-btn">Extraction Text Summary (RU/EN)</button>
+      <div id="extr_text" class="collapsible">
+        <h3>RU</h3>
+        <p>{{ doc.summary.extraction_text_summary.ru }}</p>
+        <h3>EN</h3>
+        <p>{{ doc.summary.extraction_text_summary.en }}</p>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <button onclick="toggle('llm_kw')" class="toggle-btn">LLM Keyword Tree</button>
+      <div id="llm_kw" class="collapsible">
+        {% macro render_node(node) -%}
+          <li>{{ node.keyword }}
+            {% if node.children %}
+              <ul>
+                {% for c in node.children %}
+                  {{ render_node(c) }}
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {%- endmacro %}
+        <ul class="kw-tree">
+          {{ render_node(doc.summary.llm_keyword_summary.ru) }}
+        </ul>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <button onclick="toggle('extr_kw')" class="toggle-btn">Extraction Keyword Tree</button>
+      <div id="extr_kw" class="collapsible">
+        {% macro render_node2(node) -%}
+          <li>{{ node.keyword }}
+            {% if node.children %}
+              <ul>
+                {% for c in node.children %}
+                  {{ render_node2(c) }}
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {%- endmacro %}
+        <ul class="kw-tree">
+          {{ render_node2(doc.summary.extraction_keyword_summary.ru) }}
+        </ul>
+      </div>
+    </div>
+
+    <form action="/documents/{{ doc.id }}/delete" method="post" style="margin-top:1em;">
+      <button type="submit" onclick="return confirm('Удалить документ?')">Удалить документ</button>
+    </form>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+
+body { font-family: Arial, sans-serif; background:#f8f9fb; color:#222; }
+.container { max-width:900px; margin:24px auto; background:white; padding:18px; box-shadow:0 2px 6px rgba(0,0,0,0.08); border-radius:8px; }
+.docs { width:100%; border-collapse: collapse; margin-bottom:12px; }
+.docs th, .docs td { border:1px solid #ddd; padding:8px; text-align:left; }
+.original { white-space:pre-wrap; background:#f1f1f1; padding:12px; border-radius:6px; }
+.summary-block { margin-top:12px; }
+.toggle-btn { background:#007bff; color:white; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; }
+.collapsible { display:none; margin-top:8px; padding:10px; border-left:3px solid #ddd; background:#fcfcff; border-radius:6px; }
+.kw-tree { list-style-type: disc; margin-left: 18px; }
+footer { margin-top:18px; color:#666; font-size:0.9em; }

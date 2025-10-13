@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Documents — Список</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Список документов</h1>
+
+    {% if documents %}
+      <table class="docs">
+        <thead><tr><th>ID</th><th>file_name</th><th>name</th><th>created_at</th><th>actions</th></tr></thead>
+        <tbody>
+        {% for d in documents %}
+          <tr>
+            <td>{{ d.id }}</td>
+            <td><a href="/documents/{{ d.id }}">{{ d.file_name }}</a></td>
+            <td>{{ d.name or "-" }}</td>
+            <td>{{ d.created_at or "-" }}</td>
+            <td>
+              <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
+                <button type="submit" onclick="return confirm('Удалить документ {{ d.file_name }}?')">Удалить</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Документов пока нет.</p>
+    {% endif %}
+
+    <hr/>
+    <h2>Добавить документ</h2>
+    <form action="/documents/create" method="post">
+      <label>file_name:<br/>
+        <input type="text" name="file_name" required style="width: 100%">
+      </label>
+      <br/>
+      <label>name (опционально):<br/>
+        <input type="text" name="name" style="width: 100%">
+      </label>
+      <br/>
+      <label>text:<br/>
+        <textarea name="text" rows="8" style="width: 100%" required></textarea>
+      </label>
+      <br/>
+      <button type="submit">Создать документ</button>
+    </form>
+
+    <footer>
+      <p>Пример: FastAPI + Jinja2 (single-file). Minimal JS only for collapsing summaries.</p>
+    </footer>
+  </div>
+</body>
+</html>
