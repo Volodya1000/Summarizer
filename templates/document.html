@@ -1,56 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}{{ doc.name or doc.file_name }}{% endblock %}
-
 {% block content %}
-  <a href="/" class="back-link">← Назад к списку</a>
-  <h1 class="doc-title">{{ doc.file_name }} {% if doc.name %} — {{ doc.name }}{% endif %}</h1>
-  <p class="doc-meta">Добавлено: {{ doc.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+<div class="container">
+     <p><a href="/" class="back-link">&larr; Назад к списку документов</a></p>
 
-  <hr>
+    <h1>{{ doc.name or doc.file_name }}</h1>
+    <p><strong>Создан:</strong> {{ doc.created_at }}</p>
 
-  <h2>Исходный текст</h2>
-  <div class="original">
-    {{ doc.original_text }}
-  </div>
-
-  <hr>
-
-  <h2>Сводки</h2>
-
-  {% set summaries = [
-    ('llm_text', 'LLM (Текст)', doc.summary.llm_text_summary.ru, 'text'),
-    ('llm_keyword', 'LLM (Ключевые слова)', doc.summary.llm_keyword_summary.ru, 'keyword'),
-    ('extraction_text', 'Извлечение (Текст)', doc.summary.extraction_text_summary.ru, 'text'),
-    ('extraction_keyword', 'Извлечение (Ключевые слова)', doc.summary.extraction_keyword_summary.ru, 'keyword'),
-  ] %}
-
-  {% for id, name, summary_data, type in summaries %}
-  <div class="summary-block">
-    <h3>{{ name }}</h3>
-    <button type="button" class="toggle-btn" onclick="toggle('{{ id }}-content', this)">Показать</button> 
+    <h2>Original Text</h2>
     
-    <div id="{{ id }}-content" class="collapsible">
-        {% if type == 'text' %}
-            <p>{{ summary_data }}</p>
-        {% elif type == 'keyword' %}
-            {% macro render_keywords(node) %}
-                <li>{{ node.keyword }}
-                    {% if node.children %}
-                        <ul class="kw-tree">
-                            {% for child in node.children %}
-                                {{ render_keywords(child) }}
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </li>
-            {% endmacro %}
-            <ul class="kw-tree">
-                {{ render_keywords(summary_data) | safe }}
-            </ul>
-        {% endif %}
+    <div class="original collapsible">
+        {{ doc.original_text }}
     </div>
-  </div>
-  {% endfor %}
 
+    <h2>Summaries</h2>
+
+    <div class="tab-buttons">
+        <button onclick="showTab('llm_text_ru', this)" class="active">LLM Text RU</button>
+        <button onclick="showTab('llm_text_en', this)">LLM Text EN</button>
+        <button onclick="showTab('llm_keyword_ru', this)">LLM Keywords RU</button>
+        <button onclick="showTab('llm_keyword_en', this)">LLM Keywords EN</button>
+        <button onclick="showTab('extr_text_ru', this)">Extraction Text RU</button>
+        <button onclick="showTab('extr_text_en', this)">Extraction Text EN</button>
+        <button onclick="showTab('extr_keyword_ru', this)">Extraction Keywords RU</button>
+        <button onclick="showTab('extr_keyword_en', this)">Extraction Keywords EN</button>
+    </div>
+
+    <!-- Text Summaries -->
+    <div id="llm_text_ru" class="tab-content active">
+        <p>{{ doc.summary.llm_text_summary.ru }}</p>
+    </div>
+    <div id="llm_text_en" class="tab-content">
+        <p>{{ doc.summary.llm_text_summary.en }}</p>
+    </div>
+
+    <!-- Keyword Trees -->
+    <div id="llm_keyword_ru" class="tab-content">
+        <ul class="keyword-tree">
+        {% macro render_keywords(node) %}
+            <li>{{ node.keyword }}
+                {% if node.children %}
+                <ul>
+                    {% for child in node.children %}
+                        {{ render_keywords(child) }}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </li>
+        {% endmacro %}
+        {{ render_keywords(doc.summary.llm_keyword_summary.ru) }}
+        </ul>
+    </div>
+
+    <div id="llm_keyword_en" class="tab-content">
+        <ul class="keyword-tree">
+        {{ render_keywords(doc.summary.llm_keyword_summary.en) }}
+        </ul>
+    </div>
+
+    <div id="extr_text_ru" class="tab-content">
+        <p>{{ doc.summary.extraction_text_summary.ru }}</p>
+    </div>
+    <div id="extr_text_en" class="tab-content">
+        <p>{{ doc.summary.extraction_text_summary.en }}</p>
+    </div>
+
+    <div id="extr_keyword_ru" class="tab-content">
+        <ul class="keyword-tree">
+        {{ render_keywords(doc.summary.extraction_keyword_summary.ru) }}
+        </ul>
+    </div>
+
+    <div id="extr_keyword_en" class="tab-content">
+        <ul class="keyword-tree">
+        {{ render_keywords(doc.summary.extraction_keyword_summary.en) }}
+        </ul>
+    </div>
+</div>
+
+<script src="/static/toggle.js"></script>
 {% endblock %}
