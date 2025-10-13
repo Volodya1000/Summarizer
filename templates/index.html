@@ -10,24 +10,26 @@
     <h1>Список документов</h1>
 
     {% if documents %}
-      <table class="docs">
-        <thead><tr><th>ID</th><th>file_name</th><th>name</th><th>created_at</th><th>actions</th></tr></thead>
+            <table class="docs">
+        <thead>
+            <tr><th>Имя</th><th>Файл</th><th>Создан</th><th>Действия</th></tr>
+        </thead>
         <tbody>
         {% for d in documents %}
-          <tr>
-            <td>{{ d.id }}</td>
-            <td><a href="/documents/{{ d.id }}">{{ d.file_name }}</a></td>
-            <td>{{ d.name or "-" }}</td>
+            <tr>
+            <td><a href="/documents/{{ d.id }}">{{ d.name }}</a></td>
+            <td>{{ d.file_name }}</td>
             <td>{{ d.created_at or "-" }}</td>
             <td>
-              <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
-                <button type="submit" onclick="return confirm('Удалить документ {{ d.file_name }}?')">Удалить</button>
-              </form>
+                <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
+                <button type="submit" onclick="return confirm('Удалить {{ d.name }}?')">Удалить</button>
+                </form>
             </td>
-          </tr>
+            </tr>
         {% endfor %}
         </tbody>
-      </table>
+        </table>
+
     {% else %}
       <p>Документов пока нет.</p>
     {% endif %}
@@ -39,16 +41,13 @@
         <input type="file" name="file" accept=".pdf,.docx" required>
       </label>
       <br/>
-      <label>Имя (опционально):<br/>
-        <input type="text" name="name" style="width: 100%">
+      <label>Имя:<br/>
+        <input type="text" name="name" style="width: 100%" required>
       </label>
       <br/>
       <button type="submit">Загрузить</button>
     </form>
 
-    <footer>
-      <p>Пример: FastAPI + Jinja2. Файл обрабатывается и извлекается текст автоматически.</p>
-    </footer>
   </div>
 </body>
 </html>
