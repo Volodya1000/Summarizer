@@ -33,25 +33,21 @@
     {% endif %}
 
     <hr/>
-    <h2>Добавить документ</h2>
-    <form action="/documents/create" method="post">
-      <label>file_name:<br/>
-        <input type="text" name="file_name" required style="width: 100%">
+    <h2>Загрузить документ (PDF или DOCX)</h2>
+    <form action="/documents/upload" method="post" enctype="multipart/form-data">
+      <label>Файл:<br/>
+        <input type="file" name="file" accept=".pdf,.docx" required>
       </label>
       <br/>
-      <label>name (опционально):<br/>
+      <label>Имя (опционально):<br/>
         <input type="text" name="name" style="width: 100%">
       </label>
       <br/>
-      <label>text:<br/>
-        <textarea name="text" rows="8" style="width: 100%" required></textarea>
-      </label>
-      <br/>
-      <button type="submit">Создать документ</button>
+      <button type="submit">Загрузить</button>
     </form>
 
     <footer>
-      <p>Пример: FastAPI + Jinja2 (single-file). Minimal JS only for collapsing summaries.</p>
+      <p>Пример: FastAPI + Jinja2. Файл обрабатывается и извлекается текст автоматически.</p>
     </footer>
   </div>
 </body>

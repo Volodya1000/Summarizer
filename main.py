@@ -1,5 +1,3 @@
-
-# app_full.py
 from __future__ import annotations
 import asyncio
 from typing import List, Optional
@@ -7,8 +5,9 @@ from datetime import datetime
 import os
 from pathlib import Path
 import json
+import shutil
 
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Form
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -17,16 +16,22 @@ from sqlalchemy import Column, Integer, String, JSON, DateTime, func, select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
+# NOTE: This file expects these third-party packages installed:
+# pip install fastapi uvicorn sqlalchemy aiosqlite python-docx pdfminer.six
+# (pdf text extraction uses pdfminer.high_level.extract_text)
+
 # ----------------------------
-# Ensure template and static files exist (create on first run)
+# Paths and static/templates setup
 # ----------------------------
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
+UPLOADS_DIR = BASE_DIR / "uploads"
 TEMPLATES_DIR.mkdir(exist_ok=True)
 STATIC_DIR.mkdir(exist_ok=True)
+UPLOADS_DIR.mkdir(exist_ok=True)
 
-# index.html
+# index.html — note: removed free-text input; upload only
 INDEX_HTML = """<!doctype html>
 <html>
 <head>
@@ -62,32 +67,28 @@ INDEX_HTML = """<!doctype html>
     {% endif %}
 
     <hr/>
-    <h2>Добавить документ</h2>
-    <form action="/documents/create" method="post">
-      <label>file_name:<br/>
-        <input type="text" name="file_name" required style="width: 100%">
+    <h2>Загрузить документ (PDF или DOCX)</h2>
+    <form action="/documents/upload" method="post" enctype="multipart/form-data">
+      <label>Файл:<br/>
+        <input type="file" name="file" accept=".pdf,.docx" required>
       </label>
       <br/>
-      <label>name (опционально):<br/>
+      <label>Имя (опционально):<br/>
         <input type="text" name="name" style="width: 100%">
       </label>
       <br/>
-      <label>text:<br/>
-        <textarea name="text" rows="8" style="width: 100%" required></textarea>
-      </label>
-      <br/>
-      <button type="submit">Создать документ</button>
+      <button type="submit">Загрузить</button>
     </form>
 
     <footer>
-      <p>Пример: FastAPI + Jinja2 (single-file). Minimal JS only for collapsing summaries.</p>
+      <p>Пример: FastAPI + Jinja2. Файл обрабатывается и извлекается текст автоматически.</p>
     </footer>
   </div>
 </body>
 </html>
 """
 
-# document.html
+# document.html and error.html and static assets copied from original, minor safe adjustments
 DOCUMENT_HTML = """<!doctype html>
 <html>
 <head>
@@ -176,7 +177,6 @@ DOCUMENT_HTML = """<!doctype html>
 </html>
 """
 
-# error.html
 ERROR_HTML = """<!doctype html>
 <html>
 <head>
@@ -194,7 +194,6 @@ ERROR_HTML = """<!doctype html>
 </html>
 """
 
-# simple CSS
 STYLES_CSS = """
 body { font-family: Arial, sans-serif; background:#f8f9fb; color:#222; }
 .container { max-width:900px; margin:24px auto; background:white; padding:18px; box-shadow:0 2px 6px rgba(0,0,0,0.08); border-radius:8px; }
@@ -208,7 +207,6 @@ body { font-family: Arial, sans-serif; background:#f8f9fb; color:#222; }
 footer { margin-top:18px; color:#666; font-size:0.9em; }
 """
 
-# toggle.js — minimal JS used to show/hide summary blocks
 TOGGLE_JS = """
 function toggle(id) {
   const el = document.getElementById(id);
@@ -218,7 +216,7 @@ function toggle(id) {
 }
 """
 
-# Write files if not present
+# Write files if not present (templates + static)
 def ensure_static_and_templates():
     if not (TEMPLATES_DIR / "index.html").exists():
         (TEMPLATES_DIR / "index.html").write_text(INDEX_HTML, encoding="utf-8")
@@ -234,7 +232,7 @@ def ensure_static_and_templates():
 ensure_static_and_templates()
 
 # ----------------------------
-# DTOs (Pydantic) & forward refs
+# DTOs & forward refs
 # ----------------------------
 class KeywordNode(BaseModel):
     keyword: str
@@ -272,7 +270,7 @@ KeywordTreeSummary.update_forward_refs()
 SummaryResult.update_forward_refs()
 
 # ----------------------------
-# SQLAlchemy ORM (async-ready)
+# SQLAlchemy ORM
 # ----------------------------
 Base = declarative_base()
 
@@ -435,6 +433,66 @@ class SummaryGenerationService:
         )
 
 # ----------------------------
+# File uploader class (new)
+# ----------------------------
+class FileUploader:
+    """Класс для сохранения загруженного файла и извлечения текста (PDF и DOCX).
+
+    Использует синхронные библиотеки для разбора файлов, поэтому heavy work выполняется
+    в отдельном потоке через asyncio.to_thread().
+    """
+    def __init__(self, uploads_dir: Path):
+        self.uploads_dir = uploads_dir
+        self.uploads_dir.mkdir(parents=True, exist_ok=True)
+
+    async def save_upload(self, upload: UploadFile) -> Path:
+        # безопасное имя файла — используем оригинальное имя, но на случай конфликтов добавляем timestamp
+        filename = Path(upload.filename).name
+        target = self.uploads_dir / f"{int(datetime.utcnow().timestamp())}_{filename}"
+        # write in thread
+        await asyncio.to_thread(self._write_file, upload, target)
+        return target
+
+    def _write_file(self, upload: UploadFile, target_path: Path) -> None:
+        # UploadFile.file is a SpooledTemporaryFile-like object; we should seek and copy
+        upload.file.seek(0)
+        with open(target_path, "wb") as out_f:
+            shutil.copyfileobj(upload.file, out_f)
+        # After copying, close the upload file to free resources
+        try:
+            upload.file.close()
+        except Exception:
+            pass
+
+    async def extract_text(self, file_path: Path) -> str:
+        suffix = file_path.suffix.lower()
+        if suffix == ".pdf":
+            return await asyncio.to_thread(self._extract_text_pdf, str(file_path))
+        elif suffix == ".docx":
+            return await asyncio.to_thread(self._extract_text_docx, str(file_path))
+        else:
+            raise ValueError("Unsupported file type: only PDF and DOCX are allowed")
+
+    def _extract_text_docx(self, path: str) -> str:
+        # use python-docx
+        try:
+            from docx import Document
+        except Exception as e:
+            raise RuntimeError("python-docx not installed. Install with: pip install python-docx") from e
+        doc = Document(path)
+        paragraphs = [p.text for p in doc.paragraphs if p.text]
+        return "\n\n".join(paragraphs)
+
+    def _extract_text_pdf(self, path: str) -> str:
+        # use pdfminer.six extract_text
+        try:
+            from pdfminer.high_level import extract_text
+        except Exception as e:
+            raise RuntimeError("pdfminer.six not installed. Install with: pip install pdfminer.six") from e
+        text = extract_text(path)
+        return text or ""
+
+# ----------------------------
 # Document Service (orchestration)
 # ----------------------------
 class DocumentService:
@@ -487,8 +545,12 @@ async def startup_event():
     )
     document_service = DocumentService(repo=repo, summary_service=summary_service)
 
+    # file uploader
+    uploader = FileUploader(UPLOADS_DIR)
+
     app.state.repo = repo
     app.state.document_service = document_service
+    app.state.uploader = uploader
     # ensure static and templates exist (in case deployed to empty container)
     ensure_static_and_templates()
 
@@ -508,8 +570,14 @@ def get_document_service(request: Request) -> DocumentService:
         raise HTTPException(status_code=500, detail="DocumentService not initialized")
     return svc
 
+def get_uploader(request: Request) -> FileUploader:
+    up = getattr(request.app.state, "uploader", None)
+    if up is None:
+        raise HTTPException(status_code=500, detail="FileUploader not initialized")
+    return up
+
 # ----------------------------
-# Web endpoints: HTML (Jinja2) + form handlers
+# Web endpoints: HTML (Jinja2) + upload handler
 # ----------------------------
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, service: DocumentService = Depends(get_document_service)):
@@ -520,20 +588,38 @@ async def index(request: Request, service: DocumentService = Depends(get_documen
             d.created_at = d.created_at.strftime("%Y-%m-%d %H:%M:%S")
     return templates.TemplateResponse("index.html", {"request": request, "documents": docs})
 
-@app.post("/documents/create")
-async def create_document_form(
+@app.post("/documents/upload")
+async def upload_document(
     request: Request,
-    file_name: str = Form(...),
-    text: str = Form(...),
+    file: UploadFile = File(...),
     name: Optional[str] = Form(None),
-    service: DocumentService = Depends(get_document_service)
+    service: DocumentService = Depends(get_document_service),
+    uploader: FileUploader = Depends(get_uploader),
 ):
+    # save file
     try:
-        doc_id = await service.create_document(file_name=file_name, text=text, name=name)
+        saved_path = await uploader.save_upload(file)
     except Exception as e:
-        # if duplicate file_name or other SQL error -> show error page
-        return templates.TemplateResponse("error.html", {"request": request, "message": f"Ошибка при создании: {e}"})
-    # redirect to document view
+        return templates.TemplateResponse("error.html", {"request": request, "message": f"Ошибка сохранения файла: {e}"})
+
+    # extract text
+    try:
+        text = await uploader.extract_text(saved_path)
+    except Exception as e:
+        return templates.TemplateResponse("error.html", {"request": request, "message": f"Ошибка извлечения текста: {e}"})
+
+    if not text or len(text.strip()) == 0:
+        # still allow creating maybe empty text but warn
+        text = ""
+
+    # use original filename as file_name (without timestamp prefix)
+    orig_filename = "_".join(saved_path.name.split("_")[1:]) if "_" in saved_path.name else saved_path.name
+
+    try:
+        doc_id = await service.create_document(file_name=orig_filename, text=text, name=name)
+    except Exception as e:
+        return templates.TemplateResponse("error.html", {"request": request, "message": f"Ошибка при создании записи: {e}"})
+
     return RedirectResponse(url=f"/documents/{doc_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.get("/documents/{doc_id}", response_class=HTMLResponse)
@@ -557,7 +643,7 @@ async def delete_document_form(doc_id: int, request: Request, service: DocumentS
         return templates.TemplateResponse("error.html", {"request": request, "message": f"Документ id={doc_id} не найден."})
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
-# Optional JSON API endpoints (useful for future split)
+# Optional JSON API endpoints
 @app.get("/api/documents/", response_model=List[DocumentInfoDTO])
 async def api_list_documents(service: DocumentService = Depends(get_document_service)):
     return await service.list_documents_info()
@@ -571,4 +657,4 @@ async def api_get_document(doc_id: int, service: DocumentService = Depends(get_d
 
 # If run directly
 if __name__ == "__main__":
-    print("Run with: uvicorn app_full:app --reload")
+    print("Run with: uvicorn app_full_fixed:app --reload")
