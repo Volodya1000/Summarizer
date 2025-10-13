@@ -44,24 +44,26 @@ INDEX_HTML = """<!doctype html>
     <h1>Список документов</h1>
 
     {% if documents %}
-      <table class="docs">
-        <thead><tr><th>ID</th><th>file_name</th><th>name</th><th>created_at</th><th>actions</th></tr></thead>
+            <table class="docs">
+        <thead>
+            <tr><th>Имя</th><th>Файл</th><th>Создан</th><th>Действия</th></tr>
+        </thead>
         <tbody>
         {% for d in documents %}
-          <tr>
-            <td>{{ d.id }}</td>
-            <td><a href="/documents/{{ d.id }}">{{ d.file_name }}</a></td>
-            <td>{{ d.name or "-" }}</td>
+            <tr>
+            <td><a href="/documents/{{ d.id }}">{{ d.name }}</a></td>
+            <td>{{ d.file_name }}</td>
             <td>{{ d.created_at or "-" }}</td>
             <td>
-              <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
-                <button type="submit" onclick="return confirm('Удалить документ {{ d.file_name }}?')">Удалить</button>
-              </form>
+                <form action="/documents/{{ d.id }}/delete" method="post" style="display:inline">
+                <button type="submit" onclick="return confirm('Удалить {{ d.name }}?')">Удалить</button>
+                </form>
             </td>
-          </tr>
+            </tr>
         {% endfor %}
         </tbody>
-      </table>
+        </table>
+
     {% else %}
       <p>Документов пока нет.</p>
     {% endif %}
@@ -278,7 +280,7 @@ class TextDocument(Base):
     __tablename__ = "text_documents"
     id = Column(Integer, primary_key=True, autoincrement=True)
     file_name = Column(String, nullable=False, unique=True)
-    name = Column(String, nullable=True)
+    name = Column(String, nullable=False, unique=True)
     original_text = Column(String, nullable=False)
     summary_json = Column(JSON, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -592,11 +594,18 @@ async def index(request: Request, service: DocumentService = Depends(get_documen
 async def upload_document(
     request: Request,
     file: UploadFile = File(...),
-    name: Optional[str] = Form(None),
+    name: str = Form(...),
     service: DocumentService = Depends(get_document_service),
     uploader: FileUploader = Depends(get_uploader),
 ):
-    # save file
+    if not name.strip():
+        return templates.TemplateResponse("error.html", {"request": request, "message": "Имя документа обязательно"})
+
+    # Проверка уникальности имени
+    docs = await service.list_documents_info()
+    if any(d.name == name for d in docs):
+        return templates.TemplateResponse("error.html", {"request": request, "message": f"Документ с именем '{name}' уже существует"})
+
     try:
         saved_path = await uploader.save_upload(file)
     except Exception as e:
