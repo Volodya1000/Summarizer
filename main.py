@@ -11,13 +11,16 @@ from api_routes import router as api_router
 from repository import TextRepositoryAsync
 from services.document_service import DocumentService
 from services.summary_generation_service import SummaryGenerationService
-from services.llm_text.facade import LLMTextSummaryService
+
+#from services.llm_text.facade import LLMTextSummaryService
+from services.llm_text.llm_text_summary_service import  LLMTextSummaryService
 
 from services.extraction_text.facade import ExtractionTextSummaryService
 from services.extraction_keyword.facade import ExtractionKeywordService
 from services.extraction_keyword.translator import LocalTranslator
 
-from services.llm_keyword.keyword_tree_generator_llm import LLMKeywordService
+from services.llm_keyword.facade import LLMKeywordService
+#from services.llm_keyword.keyword_tree_generator_llm import LLMKeywordService
 from services.ollama_client import OllamaClient
 
 from file_handler import FileUploader
@@ -36,10 +39,14 @@ async def lifespan(app: FastAPI):
     await repo.init_models()
 
     ollama_client = OllamaClient(model_name="gpt-oss:120b-cloud")
+    #llm_keyword_svc=LLMKeywordService(client=ollama_client)
+    llm_keyword_svc=LLMKeywordService()
+
+    llm_text_svc=LLMTextSummaryService(client=ollama_client)
 
     summary_service = SummaryGenerationService(
-        llm_text_svc=LLMTextSummaryService(),
-        llm_keyword_svc=LLMKeywordService(client=ollama_client),
+        llm_text_svc=llm_text_svc,
+        llm_keyword_svc=llm_keyword_svc,
         extraction_text_svc=ExtractionTextSummaryService(),
         extraction_keyword_svc=ExtractionKeywordService(LocalTranslator()),
     )
@@ -49,8 +56,7 @@ async def lifespan(app: FastAPI):
     app.state.repo = repo
     app.state.uploader = FileUploader(UPLOADS_DIR)
 
-    yield  # тут app работает
-
+    yield  
     # Shutdown
     if repo := getattr(app.state, "repo", None):
         await repo.engine.dispose()
