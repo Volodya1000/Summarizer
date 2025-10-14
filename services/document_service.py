@@ -3,7 +3,7 @@ from typing import List, Optional
 from repository import TextRepositoryAsync
 from .summary_generation_service import SummaryGenerationService
 from models import TextDocumentDTO, DocumentInfoDTO
-
+from .report_service import ReportService
 class DocumentService:
     def __init__(self, repo: TextRepositoryAsync, summary_service: SummaryGenerationService):
         self.repo = repo
@@ -27,3 +27,8 @@ class DocumentService:
 
     async def delete_document(self, doc_id: int) -> bool:
         return await self.repo.delete_document(doc_id)
+    
+    async def generate_report(self, doc_id: int) -> bytes:
+        doc = await self.get_document(doc_id)
+        report_service = ReportService()
+        return await report_service.generate_pdf(doc)

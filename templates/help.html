@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Помощь и Функционал{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Справка по использованию системы анализа документов 📘</h1>
+    <p class="lead">
+        Эта страница поможет вам быстро освоить основные функции нашей системы для загрузки, анализа и управления документами.
+    </p>
+
+    <div class="accordion" id="helpAccordion">
+
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                        aria-expanded="true" aria-controls="collapseOne">
+                    🚀 Загрузка и Добавление Документа
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                 data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                    <p>Для добавления нового документа выполните следующие шаги на главной странице (/) :</p>
+                    <ol>
+                        <li><strong>Имя документа:</strong> Введите уникальное и осмысленное имя для вашего документа.</li>
+                        <li><strong>Выбор файла:</strong> Нажмите "Выберите файл" и укажите файл формата PDF или DOCX.</li>
+                        <li><strong>Загрузка:</strong> Нажмите кнопку "Загрузить". Система извлечёт текст, сгенерирует сводки и сохранит документ.</li>
+                        <li>После успешной загрузки вы будете перенаправлены на страницу просмотра документа.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    📊 Доступные Типы Сводок (Summary)
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                 data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                    <p>Для каждого загруженного документа генерируются следующие типы сводок (на русском и английском):</p>
+                    <ul>
+                        <li><strong>Сводка LLM:</strong> Краткое, связное резюме текста, созданное большой языковой моделью.</li>
+                        <li><strong>Сводка на основе извлечения:</strong> Экстрактивное резюме из ключевых предложений исходного текста.</li>
+                        <li><strong>Дерево ключевых слов LLM:</strong> Иерархическая структура ключевых фраз, созданная LLM.</li>
+                        <li><strong>Дерево ключевых слов на основе извлечения:</strong> Построено на алгоритмах YAKE и кластеризации.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    🗑️ Удаление Документа
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                 data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                    <p>Удалить документ можно двумя способами:</p>
+                    <ol>
+                        <li><strong>На главной странице:</strong> Нажмите кнопку "Удалить" рядом с документом.</li>
+                        <li><strong>На странице просмотра:</strong> Используйте кнопку "Удалить" вверху страницы.</li>
+                    </ol>
+                    <p class="text-danger"><strong>Внимание:</strong> Удаление необратимо и стирает документ и все его сводки.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                    📥 Скачивание и 🖨️ Печать Отчета
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour"
+                 data-bs-parent="#helpAccordion">
+                <div class="accordion-body">
+                    <p>На странице каждого документа доступны функции работы с отчетом PDF:</p>
+                    <ul>
+                        <li><strong>Скачать:</strong> Нажмите "Скачать отчет PDF". Файл будет сохранён на устройство.</li>
+                        <li><strong>Распечатать:</strong> Нажмите "Печать отчета" — откроется окно печати браузера.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

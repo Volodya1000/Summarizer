@@ -15,16 +15,37 @@
 
     <h2>Summaries</h2>
 
-    <div class="tab-buttons">
-        <button onclick="showTab('llm_text_ru', this)" class="active">LLM Text RU</button>
-        <button onclick="showTab('llm_text_en', this)">LLM Text EN</button>
-        <button onclick="showTab('llm_keyword_ru', this)">LLM Keywords RU</button>
-        <button onclick="showTab('llm_keyword_en', this)">LLM Keywords EN</button>
-        <button onclick="showTab('extr_text_ru', this)">Extraction Text RU</button>
-        <button onclick="showTab('extr_text_en', this)">Extraction Text EN</button>
-        <button onclick="showTab('extr_keyword_ru', this)">Extraction Keywords RU</button>
-        <button onclick="showTab('extr_keyword_en', this)">Extraction Keywords EN</button>
-    </div>
+   <div class="tab-buttons-group">
+  <h3>LLM Text Summaries</h3>
+  <div class="tab-buttons">
+      <button onclick="showTab('llm_text_ru', this)" class="active">RU</button>
+      <button onclick="showTab('llm_text_en', this)">EN</button>
+  </div>
+</div>
+
+<div class="tab-buttons-group">
+  <h3>LLM Keywords</h3>
+  <div class="tab-buttons">
+      <button onclick="showTab('llm_keyword_ru', this)" class="active">RU</button>
+      <button onclick="showTab('llm_keyword_en', this)">EN</button>
+  </div>
+</div>
+
+<div class="tab-buttons-group">
+  <h3>Extraction Text</h3>
+  <div class="tab-buttons">
+      <button onclick="showTab('extr_text_ru', this)" class="active">RU</button>
+      <button onclick="showTab('extr_text_en', this)">EN</button>
+  </div>
+</div>
+
+<div class="tab-buttons-group">
+  <h3>Extraction Keywords</h3>
+  <div class="tab-buttons">
+      <button onclick="showTab('extr_keyword_ru', this)" class="active">RU</button>
+      <button onclick="showTab('extr_keyword_en', this)">EN</button>
+  </div>
+</div>
 
     {# Text Summaries #}
     <div id="llm_text_ru" class="tab-content active">
@@ -94,7 +115,19 @@
         {% endfor %}
         </ul>
     </div>
+    <hr>
+
+   <div class="action-buttons">
+    <!-- Скачивание -->
+    <a href="/documents/{{ doc.id }}/report/download" class="btn download-btn">📄 Скачать PDF</a>
+
+    <!-- Печать -->
+    <a href="/documents/{{ doc.id }}/report/print" target="_blank" class="btn print-btn">🖨️ Печать PDF</a>
 </div>
+
+
+</div>
+
 
 <script src="/static/toggle.js"></script>
 {% endblock %}

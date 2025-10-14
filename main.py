@@ -12,8 +12,8 @@ from repository import TextRepositoryAsync
 from services.document_service import DocumentService
 from services.summary_generation_service import SummaryGenerationService
 
-#from services.llm_text.facade import LLMTextSummaryService
-from services.llm_text.llm_text_summary_service import  LLMTextSummaryService
+from services.llm_text.facade import LLMTextSummaryService
+#from services.llm_text.llm_text_summary_service import  LLMTextSummaryService
 
 from services.extraction_text.facade import ExtractionTextSummaryService
 from services.extraction_keyword.facade import ExtractionKeywordService
@@ -42,7 +42,8 @@ async def lifespan(app: FastAPI):
     #llm_keyword_svc=LLMKeywordService(client=ollama_client)
     llm_keyword_svc=LLMKeywordService()
 
-    llm_text_svc=LLMTextSummaryService(client=ollama_client)
+    #llm_text_svc=LLMTextSummaryService(client=ollama_client)
+    llm_text_svc=LLMTextSummaryService()
 
     summary_service = SummaryGenerationService(
         llm_text_svc=llm_text_svc,

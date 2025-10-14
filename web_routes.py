@@ -4,6 +4,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from dependencies import get_document_service, get_uploader
 from services.document_service import DocumentService
 from file_handler import FileUploader
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 
 router = APIRouter()
 
@@ -72,3 +74,38 @@ async def view_document(doc_id: int, request: Request, service: DocumentService 
 async def delete_document_form(doc_id: int, service: DocumentService = Depends(get_document_service)):
     await service.delete_document(doc_id)
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/documents/{doc_id}/report/download")
+async def download_report(doc_id: int, service: DocumentService = Depends(get_document_service)):
+    pdf_bytes = await service.generate_report(doc_id)
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="document_{doc_id}.pdf"'}
+    )
+
+
+@router.get("/documents/{doc_id}/report/pdf")
+async def report_pdf(doc_id: int, service: DocumentService = Depends(get_document_service)):
+    pdf_bytes = await service.generate_report(doc_id)
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="document_{doc_id}.pdf"'}
+    )
+
+@router.get("/documents/{doc_id}/report/print", response_class=HTMLResponse)
+async def print_report_page(doc_id: int, request: Request):
+    pdf_url = request.url_for("report_pdf", doc_id=doc_id)
+    return request.app.templates.TemplateResponse(
+        "print_pdf.html",
+        {"request": request, "pdf_url": pdf_url}
+    )
+
+@router.get("/help", response_class=HTMLResponse)
+async def help_page(request: Request):
+    """Отображает страницу помощи пользователю."""
+    return request.app.templates.TemplateResponse(
+        "help.html",
+        {"request": request}
+    )
