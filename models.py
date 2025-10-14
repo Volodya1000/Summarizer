@@ -25,8 +25,9 @@ class TextSummary(BaseModel):
     en: str
 
 class KeywordTreeSummary(BaseModel):
-    ru: List[KeywordNode]
-    en:  List[KeywordNode]
+    """Модель для хранения деревьев ключевых слов на двух языках."""
+    ru: List[KeywordNode] = Field(description="Список корневых узлов для русского языка.")
+    en: List[KeywordNode] = Field(description="Список корневых узлов для английского языка.")
 
 class SummaryResult(BaseModel):
     llm_text_summary: TextSummary

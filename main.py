@@ -12,10 +12,14 @@ from repository import TextRepositoryAsync
 from services.document_service import DocumentService
 from services.summary_generation_service import SummaryGenerationService
 from services.llm_text.facade import LLMTextSummaryService
-from services.llm_keyword.facade import LLMKeywordService
+
 from services.extraction_text.facade import ExtractionTextSummaryService
 from services.extraction_keyword.facade import ExtractionKeywordService
 from services.extraction_keyword.translator import LocalTranslator
+
+from services.llm_keyword.keyword_tree_generator_llm import LLMKeywordService
+from services.ollama_client import OllamaClient
+
 from file_handler import FileUploader
 from dependencies import get_document_service, get_uploader
 
@@ -31,9 +35,11 @@ async def lifespan(app: FastAPI):
     repo = TextRepositoryAsync(db_url=db_url)
     await repo.init_models()
 
+    ollama_client = OllamaClient(model_name="gpt-oss:120b-cloud")
+
     summary_service = SummaryGenerationService(
         llm_text_svc=LLMTextSummaryService(),
-        llm_keyword_svc=LLMKeywordService(),
+        llm_keyword_svc=LLMKeywordService(client=ollama_client),
         extraction_text_svc=ExtractionTextSummaryService(),
         extraction_keyword_svc=ExtractionKeywordService(LocalTranslator()),
     )
