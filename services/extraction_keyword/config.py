@@ -6,7 +6,7 @@ import logging
 
 # Настройки для YAKE
 YAKE_TOP_K = 40
-
+MAX_CHILDREN_PER_NODE = 5 
 # Настройки для кластеризации/построения дерева
 MERGE_THRESH = 0.3
 SOFT_JACCARD_ATTACH = 0.18
