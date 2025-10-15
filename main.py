@@ -15,7 +15,11 @@ from services.summary_generation_service import SummaryGenerationService
 from services.llm_text.facade import LLMTextSummaryService
 #from services.llm_text.llm_text_summary_service import  LLMTextSummaryService
 
-from services.extraction_text.facade import ExtractionTextSummaryService
+#from services.extraction_text.facade import ExtractionTextSummaryService
+from services.extraction_text.extraction_text_service import ExtractionTextSummaryService
+
+
+
 from services.extraction_keyword.facade import ExtractionKeywordService
 from services.extraction_keyword.translator import LocalTranslator
 
@@ -48,7 +52,7 @@ async def lifespan(app: FastAPI):
     summary_service = SummaryGenerationService(
         llm_text_svc=llm_text_svc,
         llm_keyword_svc=llm_keyword_svc,
-        extraction_text_svc=ExtractionTextSummaryService(),
+        extraction_text_svc=ExtractionTextSummaryService(summary_size=10),
         extraction_keyword_svc=ExtractionKeywordService(LocalTranslator()),
     )
 
