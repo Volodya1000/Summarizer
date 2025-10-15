@@ -8,7 +8,7 @@ class ExtractionKeywordService1:
         await asyncio.sleep(0.03)
         node = KeywordNode(name="extr_root", children=[KeywordNode(llm_child="extr_child")])
         return KeywordTreeSummary(ru=node, en=node)
-from .translator import LocalTranslator
+from services.translator import LocalTranslator
 from .clustering import extract_key_phrases, cluster_phrases
 from .tree_builder import build_tree_from_clusters
 
