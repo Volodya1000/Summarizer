@@ -21,7 +21,6 @@ class ExtractionKeywordService:
     Всегда возвращает KeywordTreeSummary (RU и EN) независимо от исходного языка.
     """
     def __init__(self, translator: LocalTranslator):
-        # Удаляем self.lang, так как он определяется динамически
         self.translator = translator
 
     def _detect_language(self,text: str) -> str:
@@ -44,7 +43,7 @@ class ExtractionKeywordService:
             name_translated = self.translator.translate(node.name, src=src, tgt=tgt)
             
             translated_children = await self._translate_tree(node.children, src=src, tgt=tgt)
-            # Предполагаем, что конструктор KeywordNode принимает 'name' и 'children'
+
             translated_nodes.append(KeywordNode(name=name_translated, children=translated_children))
             
         return translated_nodes
@@ -52,7 +51,6 @@ class ExtractionKeywordService:
     async def generate(self, text: str) -> KeywordTreeSummary:
         """
         Основной асинхронный метод для построения двуязычного дерева.
-        Входной параметр 'lang' удален. Язык определяется автоматически.
         
         :param text: Исходный текст.
         :return: Объект KeywordTreeSummary с деревьями на RU и EN.
